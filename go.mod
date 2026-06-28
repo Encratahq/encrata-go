@@ -1,0 +1,5 @@
+module github.com/Encratahq/encrata-go
+
+go 1.25.6
+
+require golang.org/x/sync v0.21.0

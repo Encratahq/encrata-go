@@ -15,10 +15,6 @@ import (
 	"time"
 )
 
-// doRequest performs an HTTP request against the Encrata API. Transient
-// failures (connection errors and the retryable status codes) are retried with
-// full-jitter exponential backoff, honoring a Retry-After header when present.
-// On a 2xx response the body is decoded into out when out is non-nil.
 func (c *Client) doRequest(ctx context.Context, method, path string, query url.Values, body, out any) error {
 	endpoint := c.baseURL + path
 	if len(query) > 0 {
@@ -96,8 +92,6 @@ func (c *Client) doRequest(ctx context.Context, method, path string, query url.V
 	}
 }
 
-// drainResponse reads and closes the response body, returning the bytes, the
-// status code, and any Retry-After hint.
 func drainResponse(resp *http.Response) (body []byte, status int, retryAfter time.Duration, err error) {
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -108,9 +102,6 @@ func drainResponse(resp *http.Response) (body []byte, status int, retryAfter tim
 	return b, resp.StatusCode, ra, nil
 }
 
-// waitBackoff sleeps before the next retry. A Retry-After hint takes priority
-// (capped at maxBackoff); otherwise it uses full-jitter exponential backoff.
-// It returns ctx.Err() if the context is cancelled while waiting.
 func (c *Client) waitBackoff(ctx context.Context, attempt int, retryAfter time.Duration) error {
 	delay := retryAfter
 	if delay > maxBackoff {
@@ -133,9 +124,6 @@ func (c *Client) waitBackoff(ctx context.Context, attempt int, retryAfter time.D
 	}
 }
 
-// backoffDelay returns a random delay in [0, min(initial*factor^attempt, max)]
-// - the AWS "full jitter" strategy, so many clients retrying at once spread
-// their load instead of spiking together.
 func backoffDelay(attempt int) time.Duration {
 	ceiling := float64(initialBackoff) * math.Pow(backoffFactor, float64(attempt))
 	if ceiling > float64(maxBackoff) {
@@ -144,9 +132,6 @@ func backoffDelay(attempt int) time.Duration {
 	return time.Duration(rand.Float64() * ceiling)
 }
 
-// parseRetryAfter understands both forms allowed by the HTTP spec: a number of
-// seconds ("5" or "1.5") or an HTTP-date. The returned duration is never
-// negative; ok is false when the header is missing or unparseable.
 func parseRetryAfter(value string) (delay time.Duration, ok bool) {
 	value = strings.TrimSpace(value)
 	if value == "" {
@@ -168,8 +153,6 @@ func parseRetryAfter(value string) (delay time.Duration, ok bool) {
 	return 0, false
 }
 
-// newAPIError maps an HTTP status code and error body to the matching typed
-// error.
 func newAPIError(status int, body []byte, retryAfter time.Duration) error {
 	var parsed struct {
 		Message string `json:"message"`

@@ -15,27 +15,20 @@ type lookupConfig struct {
 	concurrency int
 }
 
-// LookupOption customizes a lookup. The same options apply to Lookup and
-// LookupMany.
 type LookupOption func(*lookupConfig)
 
-// WithFields restricts the lookup to the named enrichment fields.
 func WithFields(fields ...string) LookupOption {
 	return func(cfg *lookupConfig) { cfg.fields = fields }
 }
 
-// WithNoCache forces a fresh lookup, bypassing any cached result.
 func WithNoCache() LookupOption {
 	return func(cfg *lookupConfig) { cfg.nocache = true }
 }
 
-// WithConcurrency caps the number of in-flight lookups in LookupMany. It has no
-// effect on a single Lookup. The default is 10.
 func WithConcurrency(n int) LookupOption {
 	return func(cfg *lookupConfig) { cfg.concurrency = n }
 }
 
-// Lookup enriches a single email address into a Person.
 func (c *Client) Lookup(ctx context.Context, email string, opts ...LookupOption) (*Person, error) {
 	var cfg lookupConfig
 	for _, opt := range opts {
@@ -57,7 +50,6 @@ func (c *Client) Lookup(ctx context.Context, email string, opts ...LookupOption)
 	return &person, nil
 }
 
-// Validate checks whether an email is deliverable. It does not consume credits.
 func (c *Client) Validate(ctx context.Context, email string) (*Validation, error) {
 	var v Validation
 	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/validate", nil, map[string]string{"email": email}, &v); err != nil {
@@ -66,7 +58,6 @@ func (c *Client) Validate(ctx context.Context, email string) (*Validation, error
 	return &v, nil
 }
 
-// Breaches reports data-breach exposure for an email. It does not consume credits.
 func (c *Client) Breaches(ctx context.Context, email string) (*BreachReport, error) {
 	var r BreachReport
 	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/breaches", nil, map[string]string{"email": email}, &r); err != nil {
@@ -75,19 +66,12 @@ func (c *Client) Breaches(ctx context.Context, email string) (*BreachReport, err
 	return &r, nil
 }
 
-// LookupResult pairs an input email with its lookup outcome. Exactly one of
-// Person or Err is set.
 type LookupResult struct {
 	Email  string
 	Person *Person
 	Err    error
 }
 
-// LookupMany enriches many emails concurrently, preserving input order. A
-// failure on one email is reported in that element's Err field rather than
-// aborting the batch, so you keep the results you already paid for. The
-// returned error is non-nil only when ctx is cancelled. Concurrency defaults to
-// 10 (override with WithConcurrency).
 func (c *Client) LookupMany(ctx context.Context, emails []string, opts ...LookupOption) ([]LookupResult, error) {
 	results := make([]LookupResult, len(emails))
 	if len(emails) == 0 {

@@ -35,32 +35,24 @@ var validChangeDetection = map[string]bool{
 	"full_refresh": true,
 }
 
-// MonitorOption customizes CreateMonitor.
 type MonitorOption func(*monitorConfig)
 
-// WithMonitorEmails sets the emails a monitor tracks.
 func WithMonitorEmails(emails ...string) MonitorOption {
 	return func(cfg *monitorConfig) { cfg.emails = emails }
 }
 
-// WithFrequency sets the run cadence: "weekly", "biweekly", "monthly", or
-// "quarterly". The default is "monthly".
 func WithFrequency(frequency string) MonitorOption {
 	return func(cfg *monitorConfig) { cfg.frequency = frequency }
 }
 
-// WithChangeDetection sets the detection mode: "diff_only" or "full_refresh".
-// The default is "diff_only".
 func WithChangeDetection(mode string) MonitorOption {
 	return func(cfg *monitorConfig) { cfg.changeDetection = mode }
 }
 
-// WithListID uses a contact list as the monitor's data source.
 func WithListID(listID string) MonitorOption {
 	return func(cfg *monitorConfig) { cfg.listID = listID }
 }
 
-// ListMonitors returns all monitors.
 func (c *Client) ListMonitors(ctx context.Context) ([]Monitor, error) {
 	var resp struct {
 		Monitors []Monitor `json:"monitors"`
@@ -71,7 +63,6 @@ func (c *Client) ListMonitors(ctx context.Context) ([]Monitor, error) {
 	return resp.Monitors, nil
 }
 
-// CreateMonitor creates a new monitor.
 func (c *Client) CreateMonitor(ctx context.Context, req CreateMonitorRequest, opts ...MonitorOption) (*Monitor, error) {
 	cfg := monitorConfig{frequency: "monthly", changeDetection: "diff_only"}
 	for _, opt := range opts {
@@ -105,7 +96,6 @@ func (c *Client) CreateMonitor(ctx context.Context, req CreateMonitorRequest, op
 	return &m, nil
 }
 
-// GetMonitor returns a monitor by ID.
 func (c *Client) GetMonitor(ctx context.Context, monitorID string) (*Monitor, error) {
 	var m Monitor
 	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/monitors/"+url.PathEscape(monitorID), nil, nil, &m); err != nil {
@@ -114,7 +104,6 @@ func (c *Client) GetMonitor(ctx context.Context, monitorID string) (*Monitor, er
 	return &m, nil
 }
 
-// TriggerRun starts an immediate monitoring run.
 func (c *Client) TriggerRun(ctx context.Context, monitorID string) (*RunTrigger, error) {
 	var t RunTrigger
 	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/monitors/"+url.PathEscape(monitorID)+"/run", nil, map[string]any{}, &t); err != nil {
@@ -130,7 +119,6 @@ func pageQuery(limit, offset int) url.Values {
 	return q
 }
 
-// ListRuns returns one page of runs for a monitor along with the total count.
 func (c *Client) ListRuns(ctx context.Context, monitorID string, limit, offset int) ([]MonitorRun, int, error) {
 	var resp struct {
 		Runs  []MonitorRun `json:"runs"`
@@ -146,14 +134,6 @@ func (c *Client) ListRuns(ctx context.Context, monitorID string, limit, offset i
 	return resp.Runs, total, nil
 }
 
-// IterRuns iterates over every run of a monitor, fetching pages on demand:
-//
-//	for run, err := range client.IterRuns(ctx, monitorID) {
-//	    if err != nil {
-//	        return err
-//	    }
-//	    // use run
-//	}
 func (c *Client) IterRuns(ctx context.Context, monitorID string) iter.Seq2[MonitorRun, error] {
 	return func(yield func(MonitorRun, error) bool) {
 		offset := 0
@@ -179,7 +159,6 @@ func (c *Client) IterRuns(ctx context.Context, monitorID string) iter.Seq2[Monit
 	}
 }
 
-// GetRunResults returns one page of result snapshots for a run.
 func (c *Client) GetRunResults(ctx context.Context, monitorID, runID string, changesOnly bool, limit, offset int) ([]MonitorSnapshot, int, error) {
 	q := pageQuery(limit, offset)
 	if changesOnly {
@@ -199,7 +178,6 @@ func (c *Client) GetRunResults(ctx context.Context, monitorID, runID string, cha
 	return resp.Results, total, nil
 }
 
-// IterRunResults iterates over every result snapshot of a run.
 func (c *Client) IterRunResults(ctx context.Context, monitorID, runID string, changesOnly bool) iter.Seq2[MonitorSnapshot, error] {
 	return func(yield func(MonitorSnapshot, error) bool) {
 		offset := 0
@@ -225,7 +203,6 @@ func (c *Client) IterRunResults(ctx context.Context, monitorID, runID string, ch
 	}
 }
 
-// ListAllRuns returns one page of runs across all monitors.
 func (c *Client) ListAllRuns(ctx context.Context, limit, offset int) ([]MonitorRun, int, error) {
 	var resp struct {
 		Runs  []MonitorRun `json:"runs"`
@@ -241,7 +218,6 @@ func (c *Client) ListAllRuns(ctx context.Context, limit, offset int) ([]MonitorR
 	return resp.Runs, total, nil
 }
 
-// IterAllRuns iterates over every run across all monitors.
 func (c *Client) IterAllRuns(ctx context.Context) iter.Seq2[MonitorRun, error] {
 	return func(yield func(MonitorRun, error) bool) {
 		offset := 0
@@ -267,7 +243,6 @@ func (c *Client) IterAllRuns(ctx context.Context) iter.Seq2[MonitorRun, error] {
 	}
 }
 
-// ListAllResults returns one page of enrichment results across all monitors.
 func (c *Client) ListAllResults(ctx context.Context, changesOnly bool, limit, offset int) ([]MonitorSnapshot, int, error) {
 	q := pageQuery(limit, offset)
 	if changesOnly {
@@ -287,7 +262,6 @@ func (c *Client) ListAllResults(ctx context.Context, changesOnly bool, limit, of
 	return resp.Results, total, nil
 }
 
-// IterAllResults iterates over every enrichment result across all monitors.
 func (c *Client) IterAllResults(ctx context.Context, changesOnly bool) iter.Seq2[MonitorSnapshot, error] {
 	return func(yield func(MonitorSnapshot, error) bool) {
 		offset := 0

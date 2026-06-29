@@ -51,7 +51,6 @@ func workflowBody(req WorkflowRequest, includeStatus bool) map[string]any {
 	return body
 }
 
-// ListWorkflows lists workflows and returns one page plus the total count.
 func (c *Client) ListWorkflows(ctx context.Context, opts WorkflowListOptions) ([]Workflow, int, error) {
 	q := url.Values{}
 	page := opts.Page
@@ -80,7 +79,6 @@ func (c *Client) ListWorkflows(ctx context.Context, opts WorkflowListOptions) ([
 	return resp.Workflows, resp.Total, nil
 }
 
-// CreateWorkflow creates a new workflow or clones one from TemplateID.
 func (c *Client) CreateWorkflow(ctx context.Context, req WorkflowRequest) (*Workflow, error) {
 	var workflow Workflow
 	if err := c.doRequest(ctx, http.MethodPost, "/api/workflows", nil, workflowBody(req, false), &workflow); err != nil {
@@ -89,7 +87,6 @@ func (c *Client) CreateWorkflow(ctx context.Context, req WorkflowRequest) (*Work
 	return &workflow, nil
 }
 
-// GetWorkflow gets a workflow by ID.
 func (c *Client) GetWorkflow(ctx context.Context, workflowID string) (*Workflow, error) {
 	var workflow Workflow
 	if err := c.doRequest(ctx, http.MethodGet, "/api/workflows/"+url.PathEscape(workflowID), nil, nil, &workflow); err != nil {
@@ -98,7 +95,6 @@ func (c *Client) GetWorkflow(ctx context.Context, workflowID string) (*Workflow,
 	return &workflow, nil
 }
 
-// UpdateWorkflow updates a workflow. Updating creates a new workflow version.
 func (c *Client) UpdateWorkflow(ctx context.Context, workflowID string, req WorkflowRequest) (*Workflow, error) {
 	var workflow Workflow
 	if err := c.doRequest(ctx, http.MethodPut, "/api/workflows/"+url.PathEscape(workflowID), nil, workflowBody(req, true), &workflow); err != nil {
@@ -110,7 +106,6 @@ func (c *Client) UpdateWorkflow(ctx context.Context, workflowID string, req Work
 	return &workflow, nil
 }
 
-// ListWorkflowRuns lists workflow execution runs.
 func (c *Client) ListWorkflowRuns(ctx context.Context, opts WorkflowRunListOptions) ([]WorkflowRun, int, error) {
 	q := url.Values{}
 	page := opts.Page
@@ -139,7 +134,6 @@ func (c *Client) ListWorkflowRuns(ctx context.Context, opts WorkflowRunListOptio
 	return resp.Runs, resp.Total, nil
 }
 
-// GetWorkflowRun gets detailed workflow run information.
 func (c *Client) GetWorkflowRun(ctx context.Context, runID string) (*WorkflowRun, error) {
 	var run WorkflowRun
 	if err := c.doRequest(ctx, http.MethodGet, "/api/workflows/runs/"+url.PathEscape(runID), nil, nil, &run); err != nil {
@@ -148,7 +142,6 @@ func (c *Client) GetWorkflowRun(ctx context.Context, runID string) (*WorkflowRun
 	return &run, nil
 }
 
-// ListWorkflowTemplates lists available workflow templates.
 func (c *Client) ListWorkflowTemplates(ctx context.Context, category string) ([]WorkflowTemplate, error) {
 	var q url.Values
 	if category != "" {
@@ -164,7 +157,6 @@ func (c *Client) ListWorkflowTemplates(ctx context.Context, category string) ([]
 	return resp.Templates, nil
 }
 
-// ListWorkflowSecrets lists workflow secret names. Values are never returned.
 func (c *Client) ListWorkflowSecrets(ctx context.Context) ([]WorkflowSecret, error) {
 	var resp struct {
 		Secrets []WorkflowSecret `json:"secrets"`
@@ -175,7 +167,6 @@ func (c *Client) ListWorkflowSecrets(ctx context.Context) ([]WorkflowSecret, err
 	return resp.Secrets, nil
 }
 
-// CreateWorkflowSecret creates an encrypted workflow secret.
 func (c *Client) CreateWorkflowSecret(ctx context.Context, name, value string) (RawObject, error) {
 	var resp RawObject
 	if err := c.doRequest(ctx, http.MethodPost, "/api/workflows/secrets", nil, map[string]string{"name": name, "value": value}, &resp); err != nil {
@@ -184,7 +175,6 @@ func (c *Client) CreateWorkflowSecret(ctx context.Context, name, value string) (
 	return resp, nil
 }
 
-// DeleteWorkflowSecret deletes a workflow secret by name.
 func (c *Client) DeleteWorkflowSecret(ctx context.Context, name string) (RawObject, error) {
 	var resp RawObject
 	if err := c.doRequest(ctx, http.MethodDelete, "/api/workflows/secrets", nil, map[string]string{"name": name}, &resp); err != nil {

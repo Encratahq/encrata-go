@@ -23,12 +23,10 @@ func WithHTTPClient(hc *http.Client) Option {
 	return func(c *Client) { c.httpClient = hc }
 }
 
-// WithTimeout sets the per-request timeout. Default is 30s.
 func WithTimeout(d time.Duration) Option {
 	return func(c *Client) { c.httpClient.Timeout = d }
 }
 
-// WithMaxRetries sets how many times a failed request is retried. Default is 3.
 func WithMaxRetries(n int) Option {
 	return func(c *Client) { c.maxRetries = n }
 }
@@ -48,7 +46,6 @@ func New(apiKey string, opts ...Option) (*Client, error) {
 		maxRetries: defaultMaxRetries,
 	}
 
-	// Apply caller options on top of the defaults.
 	for _, opt := range opts {
 		opt(c)
 	}

@@ -30,7 +30,6 @@ type ScreenshotRequest struct {
 	Headers       map[string]string
 }
 
-// Scrape scrapes a URL and returns clean, LLM-ready markdown with metadata.
 func (c *Client) Scrape(ctx context.Context, url string, renderJS bool) (*ScrapeResult, error) {
 	var out ScrapeResult
 	body := map[string]any{"url": url, "render_js": renderJS}
@@ -40,7 +39,6 @@ func (c *Client) Scrape(ctx context.Context, url string, renderJS bool) (*Scrape
 	return &out, nil
 }
 
-// Extract extracts structured data from a page as markdown or selector-keyed JSON.
 func (c *Client) Extract(ctx context.Context, req ExtractRequest) (*ExtractResult, error) {
 	var out ExtractResult
 	mode := req.Mode
@@ -72,7 +70,6 @@ func (c *Client) Extract(ctx context.Context, req ExtractRequest) (*ExtractResul
 	return &out, nil
 }
 
-// Screenshot captures a page screenshot as base64 PNG or JPEG data.
 func (c *Client) Screenshot(ctx context.Context, req ScreenshotRequest) (*ScreenshotResult, error) {
 	var out ScreenshotResult
 	format := req.Format

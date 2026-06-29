@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-// BulkLookup streams up to 1,000 email lookup results over Server-Sent Events.
 func (c *Client) BulkLookup(ctx context.Context, emails []string, fields ...string) (<-chan LookupResult, <-chan error) {
 	results := make(chan LookupResult)
 	errs := make(chan error, 1)
@@ -54,22 +53,18 @@ func (c *Client) BulkLookup(ctx context.Context, emails []string, fields ...stri
 	return results, errs
 }
 
-// BulkGoogleSearch runs up to 100 Google/SERP searches in one streamed request.
 func (c *Client) BulkGoogleSearch(ctx context.Context, queries []string) (*BulkSearchResponse, error) {
 	return c.bulkSearch(ctx, "/api/bulk-google-search", queries)
 }
 
-// BulkCompanySearch enriches up to 100 companies in one streamed request.
 func (c *Client) BulkCompanySearch(ctx context.Context, queries []string) (*BulkSearchResponse, error) {
 	return c.bulkSearch(ctx, "/api/bulk-company-search", queries)
 }
 
-// BulkDomainSearch runs domain intelligence on up to 100 domains in one streamed request.
 func (c *Client) BulkDomainSearch(ctx context.Context, queries []string) (*BulkSearchResponse, error) {
 	return c.bulkSearch(ctx, "/api/bulk-domain-search", queries)
 }
 
-// BulkIPSearch runs IP intelligence on up to 100 addresses in one streamed request.
 func (c *Client) BulkIPSearch(ctx context.Context, queries []string) (*BulkSearchResponse, error) {
 	return c.bulkSearch(ctx, "/api/bulk-ip-search", queries)
 }

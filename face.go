@@ -5,7 +5,6 @@ import (
 	"net/http"
 )
 
-// FaceSearch searches a face against your watchlist by public image URL.
 func (c *Client) FaceSearch(ctx context.Context, imageURL string, threshold *float64) (*FaceSearch, error) {
 	var out FaceSearch
 	body := map[string]any{"image_url": imageURL}

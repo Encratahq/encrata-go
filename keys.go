@@ -6,7 +6,6 @@ import (
 	"net/url"
 )
 
-// ListKeys lists all API keys for the authenticated account.
 func (c *Client) ListKeys(ctx context.Context) ([]APIKey, error) {
 	var resp struct {
 		Keys []APIKey `json:"keys"`
@@ -17,7 +16,6 @@ func (c *Client) ListKeys(ctx context.Context) ([]APIKey, error) {
 	return resp.Keys, nil
 }
 
-// CreateKey creates a new API key. The full key is only returned once.
 func (c *Client) CreateKey(ctx context.Context, name string) (*APIKey, error) {
 	var key APIKey
 	if err := c.doRequest(ctx, http.MethodPost, "/api/keys", nil, map[string]string{"name": name}, &key); err != nil {
@@ -26,7 +24,6 @@ func (c *Client) CreateKey(ctx context.Context, name string) (*APIKey, error) {
 	return &key, nil
 }
 
-// RevokeKey revokes an API key. Set permanent to true to permanently delete it.
 func (c *Client) RevokeKey(ctx context.Context, keyID string, permanent bool) (RawObject, error) {
 	q := url.Values{}
 	q.Set("id", keyID)

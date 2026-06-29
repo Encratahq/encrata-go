@@ -11,9 +11,9 @@ type EncrataError interface {
 }
 
 type apiBase struct {
-	StatusCode int    // HTTP status code, e.g. 401
-	Code       string // machine-readable error code from the API body, if any
-	Message    string // human-readable message
+	StatusCode int
+	Code       string
+	Message    string
 }
 
 func (e *apiBase) Error() string {
@@ -23,30 +23,24 @@ func (e *apiBase) Error() string {
 	return fmt.Sprintf("encrata: HTTP %d: %s", e.StatusCode, e.Message)
 }
 
-func (e *apiBase) isEncrataError() {} // satisfies EncrataError for every embedder
+func (e *apiBase) isEncrataError() {}
 
-// AuthenticationError => HTTP 401 (bad or missing API key).
 type AuthenticationError struct{ apiBase }
 
-// InsufficientCreditsError => HTTP 402 (out of credits).
 type InsufficientCreditsError struct{ apiBase }
 
-// InvalidRequestError => HTTP 400 (bad parameters).
 type InvalidRequestError struct{ apiBase }
 
-// RateLimitError => HTTP 429. Carries how long the server asked us to wait.
 type RateLimitError struct {
 	apiBase
-	RetryAfter time.Duration // 0 if the server didn't say
+	RetryAfter time.Duration
 }
 
-// APIError => any other 4xx/5xx not covered above.
 type APIError struct{ apiBase }
 
-// APIConnectionError => network failure or timeout (no HTTP response at all).
 type APIConnectionError struct {
 	Message string
-	Err     error // the underlying net/url error, for errors.Is/As unwrapping
+	Err     error
 }
 
 func (e *APIConnectionError) Error() string {
@@ -55,10 +49,9 @@ func (e *APIConnectionError) Error() string {
 	}
 	return fmt.Sprintf("encrata: connection error: %s", e.Message)
 }
-func (e *APIConnectionError) Unwrap() error   { return e.Err } // lets errors.Is reach the cause
+func (e *APIConnectionError) Unwrap() error   { return e.Err }
 func (e *APIConnectionError) isEncrataError() {}
 
-// Compile-time checks: fail to build if any type stops satisfying EncrataError.
 var (
 	_ EncrataError = (*AuthenticationError)(nil)
 	_ EncrataError = (*InsufficientCreditsError)(nil)

@@ -2,7 +2,6 @@ package encrata
 
 import "encoding/json"
 
-// Socials holds a person's social media profiles. Empty fields are omitted.
 type Socials struct {
 	LinkedIn  string `json:"linkedin,omitempty"`
 	Twitter   string `json:"twitter,omitempty"`
@@ -11,20 +10,17 @@ type Socials struct {
 	GitHub    string `json:"github,omitempty"`
 }
 
-// BreachInfo summarizes data-breach exposure for a person.
 type BreachInfo struct {
 	Count       int      `json:"count"`
 	Services    []string `json:"services"`
 	ExposedData []string `json:"exposed_data"`
 }
 
-// RegisteredServices lists services where an email is registered.
 type RegisteredServices struct {
 	Count    int      `json:"count"`
 	Services []string `json:"services"`
 }
 
-// NewsArticle is a news mention of a person.
 type NewsArticle struct {
 	Title  string `json:"title"`
 	URL    string `json:"url"`
@@ -32,7 +28,6 @@ type NewsArticle struct {
 	Source string `json:"source"`
 }
 
-// Publication is an academic publication attributed to a person.
 type Publication struct {
 	Title     string `json:"title"`
 	URL       string `json:"url"`
@@ -40,8 +35,6 @@ type Publication struct {
 	Citations int    `json:"citations"`
 }
 
-// Person is the complete intelligence result of an email lookup. Nested fields
-// are nil when the API returns no data for them.
 type Person struct {
 	Name               string              `json:"name"`
 	Email              string              `json:"email"`
@@ -65,14 +58,12 @@ type Person struct {
 	Publications       []Publication       `json:"publications"`
 }
 
-// Validation is the result of an email validation check.
 type Validation struct {
 	Email    string `json:"email"`
 	Validity string `json:"validity"`
 	Message  string `json:"message"`
 }
 
-// BreachReport is the standalone result of a breach check.
 type BreachReport struct {
 	Email       string   `json:"email"`
 	Count       int      `json:"count"`
@@ -81,7 +72,6 @@ type BreachReport struct {
 	Message     string   `json:"message"`
 }
 
-// Monitor is a monitoring configuration.
 type Monitor struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
@@ -97,7 +87,6 @@ type Monitor struct {
 	CreatedAt       string   `json:"created_at"`
 }
 
-// MonitorRun is a single execution of a monitor.
 type MonitorRun struct {
 	ID              string `json:"id"`
 	MonitorID       string `json:"monitor_id"`
@@ -110,8 +99,6 @@ type MonitorRun struct {
 	CompletedAt     string `json:"completed_at"`
 }
 
-// MonitorSnapshot is one enrichment result from a monitoring run. Changes and
-// Data are raw JSON; unmarshal them into a concrete type as needed.
 type MonitorSnapshot struct {
 	ID         string          `json:"id"`
 	Email      string          `json:"email"`
@@ -120,7 +107,6 @@ type MonitorSnapshot struct {
 	Data       json.RawMessage `json:"data"`
 }
 
-// ContactList is a named collection of emails.
 type ContactList struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -131,17 +117,14 @@ type ContactList struct {
 	CreatedAt   string `json:"created_at"`
 }
 
-// RunTrigger is the response to triggering an immediate monitoring run.
 type RunTrigger struct {
 	RunID   string `json:"run_id"`
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
-// RawObject holds API response blocks whose shape can vary by source.
 type RawObject map[string]any
 
-// IPInfo is an IP intelligence result.
 type IPInfo struct {
 	Query    string    `json:"query"`
 	IP       string    `json:"ip"`
@@ -152,7 +135,6 @@ type IPInfo struct {
 	Credits  float64   `json:"credits"`
 }
 
-// PhoneInfo is a phone intelligence result.
 type PhoneInfo struct {
 	Query        string    `json:"query"`
 	Phone        string    `json:"phone"`
@@ -170,7 +152,6 @@ type PhoneInfo struct {
 	Credits      float64   `json:"credits"`
 }
 
-// DomainInfo is a domain intelligence result.
 type DomainInfo struct {
 	Domain      string    `json:"domain"`
 	Whois       RawObject `json:"whois"`
@@ -184,7 +165,6 @@ type DomainInfo struct {
 	Credits     float64   `json:"credits"`
 }
 
-// CompanyResult is one person found by company search.
 type CompanyResult struct {
 	Email    string `json:"email"`
 	Name     string `json:"name"`
@@ -192,7 +172,6 @@ type CompanyResult struct {
 	LinkedIn string `json:"linkedin"`
 }
 
-// CompanyInfo is a company search response.
 type CompanyInfo struct {
 	Company string          `json:"company"`
 	Results []CompanyResult `json:"results"`
@@ -201,14 +180,12 @@ type CompanyInfo struct {
 	Credits float64         `json:"credits"`
 }
 
-// GoogleResult is one Google search result.
 type GoogleResult struct {
 	Title   string `json:"title"`
 	URL     string `json:"url"`
 	Snippet string `json:"snippet"`
 }
 
-// GoogleSearch is a Google dork search response.
 type GoogleSearch struct {
 	Query      string         `json:"query"`
 	Results    []GoogleResult `json:"results"`
@@ -217,7 +194,6 @@ type GoogleSearch struct {
 	Credits    float64        `json:"credits"`
 }
 
-// DarkWebResult is one dark web intelligence hit.
 type DarkWebResult struct {
 	Source      string    `json:"source"`
 	Title       string    `json:"title"`
@@ -236,7 +212,6 @@ type DarkWebResult struct {
 	Market      RawObject `json:"market"`
 }
 
-// DarkWebSearch is a dark web search response.
 type DarkWebSearch struct {
 	Query       string          `json:"query"`
 	Total       int             `json:"total"`
@@ -245,7 +220,6 @@ type DarkWebSearch struct {
 	Results     []DarkWebResult `json:"results"`
 }
 
-// ScrapeResult is scraped page content as markdown plus metadata.
 type ScrapeResult struct {
 	Success    bool      `json:"success"`
 	URL        string    `json:"url"`
@@ -256,7 +230,6 @@ type ScrapeResult struct {
 	LatencyMS  int       `json:"latency_ms"`
 }
 
-// ExtractResult is extracted page data.
 type ExtractResult struct {
 	Success    bool            `json:"success"`
 	URL        string          `json:"url"`
@@ -269,7 +242,6 @@ type ExtractResult struct {
 	LatencyMS  int             `json:"latency_ms"`
 }
 
-// ScreenshotResult is a captured page screenshot as base64 image data.
 type ScreenshotResult struct {
 	Success    bool      `json:"success"`
 	URL        string    `json:"url"`
@@ -283,7 +255,6 @@ type ScreenshotResult struct {
 	LatencyMS  int       `json:"latency_ms"`
 }
 
-// FaceMatch is a face search match.
 type FaceMatch struct {
 	UUID        string  `json:"uuid"`
 	Name        string  `json:"name"`
@@ -294,7 +265,6 @@ type FaceMatch struct {
 	Bottom      int     `json:"bottom"`
 }
 
-// FaceSearch is a face search response.
 type FaceSearch struct {
 	ImageURL      string      `json:"image_url"`
 	Matched       bool        `json:"matched"`
@@ -305,13 +275,11 @@ type FaceSearch struct {
 	LatencyMS     int         `json:"latency_ms"`
 }
 
-// BulkSearchResponse collects streamed bulk search results.
 type BulkSearchResponse struct {
 	Results     []RawObject `json:"results"`
 	CreditsUsed int         `json:"credits_used"`
 }
 
-// APIKey is an account API key. Key is only populated on creation.
 type APIKey struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
@@ -323,7 +291,6 @@ type APIKey struct {
 	LastUsed      string `json:"last_used"`
 }
 
-// Webhook is a webhook endpoint. Secret is only populated on creation.
 type Webhook struct {
 	ID          string   `json:"id"`
 	WorkspaceID string   `json:"workspace_id"`
@@ -337,7 +304,6 @@ type Webhook struct {
 	UpdatedAt   string   `json:"updated_at"`
 }
 
-// WebhookDelivery is one webhook delivery attempt.
 type WebhookDelivery struct {
 	ID             string    `json:"id"`
 	WebhookID      string    `json:"webhook_id"`
@@ -351,7 +317,6 @@ type WebhookDelivery struct {
 	CreatedAt      string    `json:"created_at"`
 }
 
-// Workflow is an automation workflow definition.
 type Workflow struct {
 	ID          string         `json:"id"`
 	Name        string         `json:"name"`
@@ -366,7 +331,6 @@ type Workflow struct {
 	Extra       map[string]any `json:"-"`
 }
 
-// WorkflowRun is one workflow execution.
 type WorkflowRun struct {
 	ID          string      `json:"id"`
 	WorkflowID  string      `json:"workflow_id"`
@@ -377,7 +341,6 @@ type WorkflowRun struct {
 	CompletedAt string      `json:"completed_at"`
 }
 
-// WorkflowTemplate is a reusable workflow template.
 type WorkflowTemplate struct {
 	ID          string      `json:"id"`
 	Name        string      `json:"name"`
@@ -387,7 +350,6 @@ type WorkflowTemplate struct {
 	Steps       []RawObject `json:"steps"`
 }
 
-// WorkflowSecret is a workflow secret reference. Values are never returned.
 type WorkflowSecret struct {
 	Name      string `json:"name"`
 	CreatedAt string `json:"created_at"`

@@ -15,7 +15,6 @@ type WebhookUpdateRequest struct {
 	IsActive    *bool
 }
 
-// ListWebhooks lists all webhooks for the current workspace.
 func (c *Client) ListWebhooks(ctx context.Context) ([]Webhook, error) {
 	var raw json.RawMessage
 	if err := c.doRequest(ctx, http.MethodGet, "/api/webhooks", nil, nil, &raw); err != nil {
@@ -34,7 +33,6 @@ func (c *Client) ListWebhooks(ctx context.Context) ([]Webhook, error) {
 	return wrapper.Webhooks, nil
 }
 
-// CreateWebhook registers a webhook endpoint. Secret is only returned once.
 func (c *Client) CreateWebhook(ctx context.Context, endpoint string, events []string, description string) (*Webhook, error) {
 	body := map[string]any{"url": endpoint, "events": events}
 	if description != "" {
@@ -47,7 +45,6 @@ func (c *Client) CreateWebhook(ctx context.Context, endpoint string, events []st
 	return &webhook, nil
 }
 
-// UpdateWebhook updates a webhook's URL, events, description, or active status.
 func (c *Client) UpdateWebhook(ctx context.Context, req WebhookUpdateRequest) (RawObject, error) {
 	body := map[string]any{"id": req.ID, "url": req.URL}
 	if req.Events != nil {
@@ -66,7 +63,6 @@ func (c *Client) UpdateWebhook(ctx context.Context, req WebhookUpdateRequest) (R
 	return resp, nil
 }
 
-// DeleteWebhook permanently removes a webhook and delivery history.
 func (c *Client) DeleteWebhook(ctx context.Context, webhookID string) (RawObject, error) {
 	var resp RawObject
 	if err := c.doRequest(ctx, http.MethodDelete, "/api/webhooks", nil, map[string]string{"id": webhookID}, &resp); err != nil {
@@ -75,7 +71,6 @@ func (c *Client) DeleteWebhook(ctx context.Context, webhookID string) (RawObject
 	return resp, nil
 }
 
-// TestWebhook sends a test event to a webhook.
 func (c *Client) TestWebhook(ctx context.Context, webhookID string) (RawObject, error) {
 	var resp RawObject
 	if err := c.doRequest(ctx, http.MethodPost, "/api/webhooks/test", nil, map[string]string{"id": webhookID}, &resp); err != nil {
@@ -84,7 +79,6 @@ func (c *Client) TestWebhook(ctx context.Context, webhookID string) (RawObject, 
 	return resp, nil
 }
 
-// ListWebhookDeliveries lists recent delivery attempts for a webhook.
 func (c *Client) ListWebhookDeliveries(ctx context.Context, webhookID string) ([]WebhookDelivery, error) {
 	q := url.Values{}
 	q.Set("webhook_id", webhookID)

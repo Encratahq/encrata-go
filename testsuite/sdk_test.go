@@ -75,7 +75,7 @@ func TestMonitorMethods(t *testing.T) {
 
 		monitor, err := client.CreateMonitor(
 			ctx,
-			"Sales Leads",
+			encrata.CreateMonitorRequest{Name: "Sales Leads"},
 			encrata.WithMonitorEmails("a@x.com", "b@x.com"),
 			encrata.WithFrequency("weekly"),
 			encrata.WithChangeDetection("full_refresh"),
@@ -108,7 +108,7 @@ func TestMonitorMethods(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(map[string]any{"id": "mon_123"})
 		}))
 
-		if _, err := client.CreateMonitor(ctx, "From List", encrata.WithListID("list_456")); err != nil {
+		if _, err := client.CreateMonitor(ctx, encrata.CreateMonitorRequest{Name: "From List"}, encrata.WithListID("list_456")); err != nil {
 			t.Fatalf("CreateMonitor: %v", err)
 		}
 	})

@@ -15,6 +15,26 @@ type monitorConfig struct {
 	listID          string
 }
 
+type CreateMonitorRequest struct {
+	Name            string
+	Emails          []string
+	Frequency       string
+	ChangeDetection string
+	ListID          string
+}
+
+var validFrequencies = map[string]bool{
+	"weekly":    true,
+	"biweekly":  true,
+	"monthly":   true,
+	"quarterly": true,
+}
+
+var validChangeDetection = map[string]bool{
+	"diff_only":    true,
+	"full_refresh": true,
+}
+
 // MonitorOption customizes CreateMonitor.
 type MonitorOption func(*monitorConfig)
 
@@ -52,14 +72,21 @@ func (c *Client) ListMonitors(ctx context.Context) ([]Monitor, error) {
 }
 
 // CreateMonitor creates a new monitor.
-func (c *Client) CreateMonitor(ctx context.Context, name string, opts ...MonitorOption) (*Monitor, error) {
+func (c *Client) CreateMonitor(ctx context.Context, req CreateMonitorRequest, opts ...MonitorOption) (*Monitor, error) {
 	cfg := monitorConfig{frequency: "monthly", changeDetection: "diff_only"}
 	for _, opt := range opts {
 		opt(&cfg)
 	}
 
+	if !validFrequencies[cfg.frequency] {
+		return nil, &InvalidRequestError{apiBase{Message: "invalid frequency: " + cfg.frequency + " (want weekly, biweekly, monthly, or quarterly)"}}
+	}
+	if !validChangeDetection[cfg.changeDetection] {
+		return nil, &InvalidRequestError{apiBase{Message: "invalid change detection: " + cfg.changeDetection + " (want diff_only or full_refresh)"}}
+	}
+
 	body := map[string]any{
-		"name":             name,
+		"name":             req.Name,
 		"frequency":        cfg.frequency,
 		"change_detection": cfg.changeDetection,
 	}
@@ -81,7 +108,7 @@ func (c *Client) CreateMonitor(ctx context.Context, name string, opts ...Monitor
 // GetMonitor returns a monitor by ID.
 func (c *Client) GetMonitor(ctx context.Context, monitorID string) (*Monitor, error) {
 	var m Monitor
-	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/monitors/"+monitorID, nil, nil, &m); err != nil {
+	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/monitors/"+url.PathEscape(monitorID), nil, nil, &m); err != nil {
 		return nil, err
 	}
 	return &m, nil
@@ -90,7 +117,7 @@ func (c *Client) GetMonitor(ctx context.Context, monitorID string) (*Monitor, er
 // TriggerRun starts an immediate monitoring run.
 func (c *Client) TriggerRun(ctx context.Context, monitorID string) (*RunTrigger, error) {
 	var t RunTrigger
-	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/monitors/"+monitorID+"/run", nil, map[string]any{}, &t); err != nil {
+	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/monitors/"+url.PathEscape(monitorID)+"/run", nil, map[string]any{}, &t); err != nil {
 		return nil, err
 	}
 	return &t, nil
@@ -109,7 +136,7 @@ func (c *Client) ListRuns(ctx context.Context, monitorID string, limit, offset i
 		Runs  []MonitorRun `json:"runs"`
 		Total int          `json:"total"`
 	}
-	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/monitors/"+monitorID+"/runs", pageQuery(limit, offset), nil, &resp); err != nil {
+	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/monitors/"+url.PathEscape(monitorID)+"/runs", pageQuery(limit, offset), nil, &resp); err != nil {
 		return nil, 0, err
 	}
 	total := resp.Total
@@ -162,7 +189,7 @@ func (c *Client) GetRunResults(ctx context.Context, monitorID, runID string, cha
 		Results []MonitorSnapshot `json:"results"`
 		Total   int               `json:"total"`
 	}
-	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/monitors/"+monitorID+"/runs/"+runID+"/results", q, nil, &resp); err != nil {
+	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/monitors/"+url.PathEscape(monitorID)+"/runs/"+url.PathEscape(runID)+"/results", q, nil, &resp); err != nil {
 		return nil, 0, err
 	}
 	total := resp.Total

@@ -4,12 +4,30 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 )
+
+type ContactListRequest struct {
+	Name    string
+	Type    string
+	Targets []string
+	Emails  []string
+}
 
 // ListContactLists returns all contact lists.
 func (c *Client) ListContactLists(ctx context.Context) ([]ContactList, error) {
+	return c.ListContactListsByType(ctx, "")
+}
+
+// ListContactListsByType returns contact lists, optionally filtered by type.
+func (c *Client) ListContactListsByType(ctx context.Context, listType string) ([]ContactList, error) {
+	var q url.Values
+	if listType != "" {
+		q = url.Values{}
+		q.Set("type", listType)
+	}
 	var raw json.RawMessage
-	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/lists", nil, nil, &raw); err != nil {
+	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/lists", q, nil, &raw); err != nil {
 		return nil, err
 	}
 
@@ -28,9 +46,21 @@ func (c *Client) ListContactLists(ctx context.Context) ([]ContactList, error) {
 
 // CreateContactList creates a new contact list, optionally seeded with emails.
 func (c *Client) CreateContactList(ctx context.Context, name string, emails ...string) (*ContactList, error) {
-	body := map[string]any{"name": name}
-	if len(emails) > 0 {
-		body["emails"] = emails
+	return c.CreateContactListWithRequest(ctx, ContactListRequest{Name: name, Emails: emails})
+}
+
+// CreateContactListWithRequest creates a contact list for email, phone, domain,
+// ip, company, or darkweb targets. Emails is a legacy alias for Targets.
+func (c *Client) CreateContactListWithRequest(ctx context.Context, req ContactListRequest) (*ContactList, error) {
+	body := map[string]any{"name": req.Name}
+	if req.Type != "" {
+		body["type"] = req.Type
+	}
+	if len(req.Targets) > 0 {
+		body["targets"] = req.Targets
+	}
+	if len(req.Emails) > 0 {
+		body["emails"] = req.Emails
 	}
 	var cl ContactList
 	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/lists", nil, body, &cl); err != nil {
@@ -42,7 +72,7 @@ func (c *Client) CreateContactList(ctx context.Context, name string, emails ...s
 // GetContactList returns a contact list by ID.
 func (c *Client) GetContactList(ctx context.Context, listID string) (*ContactList, error) {
 	var cl ContactList
-	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/lists/"+listID, nil, nil, &cl); err != nil {
+	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/lists/"+url.PathEscape(listID), nil, nil, &cl); err != nil {
 		return nil, err
 	}
 	return &cl, nil
@@ -50,13 +80,13 @@ func (c *Client) GetContactList(ctx context.Context, listID string) (*ContactLis
 
 // DeleteContactList deletes a contact list.
 func (c *Client) DeleteContactList(ctx context.Context, listID string) error {
-	return c.doRequest(ctx, http.MethodDelete, "/api/agent/lists/"+listID, nil, nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, "/api/agent/lists/"+url.PathEscape(listID), nil, nil, nil)
 }
 
 // ListContactListEmails returns every email in a contact list.
 func (c *Client) ListContactListEmails(ctx context.Context, listID string) ([]string, error) {
 	var raw json.RawMessage
-	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/lists/"+listID+"/emails", nil, nil, &raw); err != nil {
+	if err := c.doRequest(ctx, http.MethodGet, "/api/agent/lists/"+url.PathEscape(listID)+"/emails", nil, nil, &raw); err != nil {
 		return nil, err
 	}
 
@@ -89,7 +119,7 @@ func (c *Client) AddContactListEmails(ctx context.Context, listID string, emails
 	var resp struct {
 		Added int `json:"added"`
 	}
-	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/lists/"+listID+"/emails", nil, map[string]any{"emails": emails}, &resp); err != nil {
+	if err := c.doRequest(ctx, http.MethodPost, "/api/agent/lists/"+url.PathEscape(listID)+"/emails", nil, map[string]any{"emails": emails}, &resp); err != nil {
 		return 0, err
 	}
 	return resp.Added, nil
@@ -101,7 +131,7 @@ func (c *Client) DeleteContactListEmails(ctx context.Context, listID string, ema
 	var resp struct {
 		Deleted int `json:"deleted"`
 	}
-	if err := c.doRequest(ctx, http.MethodDelete, "/api/agent/lists/"+listID+"/emails", nil, map[string]any{"emails": emails}, &resp); err != nil {
+	if err := c.doRequest(ctx, http.MethodDelete, "/api/agent/lists/"+url.PathEscape(listID)+"/emails", nil, map[string]any{"emails": emails}, &resp); err != nil {
 		return 0, err
 	}
 	return resp.Deleted, nil

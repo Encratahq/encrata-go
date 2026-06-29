@@ -52,5 +52,18 @@ func New(apiKey string, opts ...Option) (*Client, error) {
 	for _, opt := range opts {
 		opt(c)
 	}
+
+	if c.baseURL == "" {
+		return nil, &InvalidRequestError{apiBase{Message: "base URL cannot be empty"}}
+	}
+	if c.maxRetries < 0 {
+		return nil, &InvalidRequestError{apiBase{Message: "max retries cannot be negative"}}
+	}
+	if c.httpClient == nil {
+		return nil, &InvalidRequestError{apiBase{Message: "HTTP client cannot be nil"}}
+	}
+	if c.httpClient.Timeout < 0 {
+		return nil, &InvalidRequestError{apiBase{Message: "timeout cannot be negative"}}
+	}
 	return c, nil
 }

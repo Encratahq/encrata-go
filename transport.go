@@ -134,7 +134,7 @@ func (c *Client) waitBackoff(ctx context.Context, attempt int, retryAfter time.D
 }
 
 // backoffDelay returns a random delay in [0, min(initial*factor^attempt, max)]
-// — the AWS "full jitter" strategy, so many clients retrying at once spread
+// - the AWS "full jitter" strategy, so many clients retrying at once spread
 // their load instead of spiking together.
 func backoffDelay(attempt int) time.Duration {
 	ceiling := float64(initialBackoff) * math.Pow(backoffFactor, float64(attempt))
